@@ -273,7 +273,7 @@ final class StudioStore: ObservableObject {
         for old in recent.dropFirst(9) { try? FileManager.default.removeItem(at: old) }
     }
     func exportLibrary() {
-        let panel = NSSavePanel(); panel.nameFieldStringValue = "Attune-backup.skillstudio"
+        let panel = NSSavePanel(); panel.nameFieldStringValue = "Iterune-backup.skillstudio"
         panel.message = L("Backups contain private skill and conversation text, but no API keys. Store them securely.")
         guard ready, panel.runModal() == .OK, let url = panel.url else { return }
         do { try LibraryBackup.write(library, to: url); notice = L("Library backup saved.") }

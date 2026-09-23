@@ -65,7 +65,7 @@ struct ContentView: View {
             Spacer()
             Button { showSources = true } label: { Image(systemName: "slider.horizontal.3").font(.system(size: 19)).foregroundStyle(.white.opacity(0.65)).frame(width: 48, height: 48) }
                 .buttonStyle(.plain).help(L("Skill sources and scan status")).accessibilityLabel(L("Skill sources"))
-            Text("A").font(.system(size: 11, weight: .bold)).foregroundStyle(.white.opacity(0.8))
+            Text("I").font(.system(size: 11, weight: .bold)).foregroundStyle(.white.opacity(0.8))
                 .frame(width: 32, height: 32).background(.white.opacity(0.12), in: Circle()).padding(.bottom, 18)
         }.frame(width: 76).background(StudioTheme.rail)
     }
@@ -86,7 +86,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 7) {
                 HStack {
-                    Text("Attune").font(.system(size: 22, weight: .bold, design: .rounded))
+                    Text("Iterune").font(.system(size: 22, weight: .bold, design: .rounded))
                     Spacer()
                     Button { Task { await store.scan() } } label: { Image(systemName: "arrow.clockwise").font(.system(size: 13)) }
                         .buttonStyle(.plain).disabled(store.scanning).help(L("Rescan skills · ⌘R")).accessibilityLabel(L("Rescan skills"))

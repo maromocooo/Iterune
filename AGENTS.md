@@ -1,4 +1,4 @@
-# Attune — contributor guidance
+# Iterune — contributor guidance
 
 - SwiftUIベースのmacOSネイティブアプリです。README.md、変更対象のコード・テストを読み、`git status` で状態を確認します。既存変更を消さず、依頼範囲を意味単位のcommitに分けてください。
 - Swift Packageを維持し、`Sources/SkillStudioCore` はUI非依存、`Sources/AgentSkillStudio` はSwiftUIとアプリ状態管理です。host固有のdiscovery/historyはClaude・Codex・Geminiのadapterへ分離し、UIにパス規則を埋め込みません。

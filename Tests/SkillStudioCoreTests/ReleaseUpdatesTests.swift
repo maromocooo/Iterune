@@ -2,22 +2,22 @@ import XCTest
 @testable import SkillStudioCore
 
 final class ReleaseUpdatesTests: XCTestCase {
-    private let releaseURL = "https://github.com/maromocooo/Attune/releases/tag/v1.2.3"
+    private let releaseURL = "https://github.com/maromocooo/Iterune/releases/tag/v1.2.3"
     private func release(_ url: String? = nil, tag: String = "v1.2.3", draft: Bool = false, prerelease: Bool = false) throws -> Data {
         try JSONSerialization.data(withJSONObject: ["tag_name": tag, "draft": draft,
             "prerelease": prerelease, "html_url": url ?? releaseURL])
     }
     func testCanonicalRequestAndReleasesPageAgree() async throws {
-        XCTAssertEqual(ReleaseUpdates.repository, "maromocooo/Attune")
-        XCTAssertEqual(ReleaseUpdates.releasesURL.absoluteString, "https://github.com/maromocooo/Attune/releases")
+        XCTAssertEqual(ReleaseUpdates.repository, "maromocooo/Iterune")
+        XCTAssertEqual(ReleaseUpdates.releasesURL.absoluteString, "https://github.com/maromocooo/Iterune/releases")
         let transport = ReleaseFixtureTransport(status: 200, body: try release())
         let result = try await ReleaseUpdates.check(currentVersion: "1.2.2", transport: transport)
         XCTAssertEqual(result, .available("v1.2.3", URL(string: releaseURL)!))
         let requests = await transport.requests
         XCTAssertEqual(requests.count, 1)
         let request = try XCTUnwrap(requests.first)
-        XCTAssertEqual(request.url?.absoluteString, "https://api.github.com/repos/maromocooo/Attune/releases/latest")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), "Attune")
+        XCTAssertEqual(request.url?.absoluteString, "https://api.github.com/repos/maromocooo/Iterune/releases/latest")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), "Iterune")
         XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
         XCTAssertNil(request.httpBody)
     }
@@ -26,10 +26,10 @@ final class ReleaseUpdatesTests: XCTestCase {
         credentialURL.user = "fixture"
         credentialURL.password = "synthetic"
         let invalid = [
-            "https://github.com/example-owner/Attune/releases/tag/v1.2.3",
+            "https://github.com/example-owner/Iterune/releases/tag/v1.2.3",
             "https://github.com/maromocooo/OtherProject/releases/tag/v1.2.3",
-            "https://github.com/maromocooo/Attune-extra/releases/tag/v1.2.3",
-            "https://github.com/maromocooo/Attune/releases/tag/",
+            "https://github.com/maromocooo/Iterune-extra/releases/tag/v1.2.3",
+            "https://github.com/maromocooo/Iterune/releases/tag/",
             releaseURL + "/extra", releaseURL + "/../../elsewhere", releaseURL + "?redirect=elsewhere",
             releaseURL + "#fragment", releaseURL.replacingOccurrences(of: "v1.2.3", with: "v9.9.9"),
             releaseURL.replacingOccurrences(of: "v1.2.3", with: "%76%31.2.3"),

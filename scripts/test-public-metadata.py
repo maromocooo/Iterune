@@ -56,19 +56,49 @@ class PublicMetadataTests(unittest.TestCase):
         self.assertNotIn('LLMを実装するまでは', guidance)
 
     def test_product_identity_and_app_bundle(self):
-        self.assertTrue((ROOT / 'README.md').read_text().startswith('# Attune\n'))
-        self.assertIn('.executable(name: "Attune",', (ROOT / 'Package.swift').read_text())
+        self.assertRegex((ROOT / 'README.md').read_text(), r'(?m)^# Iterune$')
+        self.assertIn('.executable(name: "Iterune",', (ROOT / 'Package.swift').read_text())
         if os.environ.get('STUDIO_TEST_BUNDLE'):
             app = pathlib.Path(os.environ['STUDIO_TEST_BUNDLE'])
             with (app / 'Contents/Info.plist').open('rb') as file:
                 info = plistlib.load(file)
-            self.assertEqual(info['CFBundleName'], 'Attune')
-            self.assertEqual(info['CFBundleDisplayName'], 'Attune')
-            self.assertEqual(info['CFBundleExecutable'], 'Attune')
+            self.assertEqual(info['CFBundleName'], 'Iterune')
+            self.assertEqual(info['CFBundleDisplayName'], 'Iterune')
+            self.assertEqual(info['CFBundleExecutable'], 'Iterune')
             self.assertTrue((app / 'Contents/MacOS' / info['CFBundleExecutable']).is_file())
             # Storage identity is independent from public product branding.
             self.assertEqual(info['CFBundleIdentifier'], 'dev.agentskillstudio.mac')
-            self.assertTrue((app / 'Contents/Resources/Attune_SkillStudioCore.bundle').is_dir())
+            self.assertTrue((app / 'Contents/Resources/Iterune_SkillStudioCore.bundle').is_dir())
+
+    def test_multilingual_readmes_share_navigation_and_structure(self):
+        languages = [('README.md', 'English'), ('README.ja.md', '日本語'),
+                     ('README.zh-CN.md', '简体中文')]
+        counts = []
+        guidance = (ROOT / 'CONTRIBUTING.md').read_text()
+        for name, language in languages:
+            with self.subTest(document=name):
+                content = (ROOT / name).read_text()
+                expected = ' | '.join(
+                    f'**{label}**' if filename == name else f'[{label}]({filename})'
+                    for filename, label in languages)
+                self.assertEqual(content.splitlines()[0], expected)
+                self.assertRegex(content, r'(?m)^# Iterune$')
+                self.assertIn('git clone https://github.com/maromocooo/Iterune.git', content)
+                self.assertIn(name, guidance)
+                sections = re.findall(r'^## .+$', content, re.MULTILINE)
+                self.assertGreaterEqual(len(sections), 10)
+                counts.append(len(sections))
+        self.assertEqual(len(set(counts)), 1)
+
+    def test_public_build_artifact_names_agree(self):
+        build = (ROOT / 'scripts/build-app.sh').read_text()
+        package = (ROOT / 'scripts/package-release.sh').read_text()
+        export = (ROOT / 'scripts/export-source.sh').read_text()
+        self.assertIn('APP="$OUTPUT_DIR/Iterune.app"', build)
+        self.assertIn('/Iterune.app"', package)
+        self.assertIn('/Iterune-$VERSION-macOS-universal.zip"', package)
+        self.assertIn('--prefix=Iterune/', export)
+        self.assertIn('dist/Iterune-source.zip', export)
 
     def test_no_vendor_artwork_in_resources_or_local_app(self):
         forbidden = {'claude.icns', 'codex.icns', 'gemini.png'}

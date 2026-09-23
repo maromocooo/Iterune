@@ -1,6 +1,6 @@
 # Release readiness
 
-Canonical repository: `maromocooo/Attune`.
+Canonical repository: `maromocooo/Iterune`.
 Source publication and formal application distribution are separate decisions.
 Neither visibility changes nor release publication are performed by build scripts.
 

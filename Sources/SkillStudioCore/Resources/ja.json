@@ -144,7 +144,7 @@
   "Demo skills have no source file.": "デモSkillには元ファイルがありません。",
   "SKILL.md changed outside the app. Rescan and review the new version before publishing.": "SKILL.mdがアプリ外で変更されています。再スキャンして新版を確認してから反映してください。",
   "Describe what you want to improve.": "改善したい内容を入力してください。",
-  "This library was created by a newer app. Update Attune.": "このライブラリは新しい版のアプリで作られています。Attuneを更新してください。",
+  "This library was created by a newer app. Update Iterune.": "このライブラリは新しい版のアプリで作られています。Iteruneを更新してください。",
   "App language": "アプリの言語",
   "Language and translation": "言語と翻訳",
   "Translate to {0}": "{0}に翻訳",

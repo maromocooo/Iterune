@@ -22,7 +22,7 @@ struct AgentSkillStudioApp: App {
         NSApplication.shared.setActivationPolicy(.regular)
     }
     var body: some Scene {
-        WindowGroup("Attune") {
+        WindowGroup("Iterune") {
             ContentView().environmentObject(store)
                 .environment(\.locale, store.language.locale)
                 .frame(minWidth: 1080, minHeight: 720)

@@ -3,7 +3,7 @@
 ## 検証方法
 
 macOS上で `swift build`、`swift test`、`python3 scripts/test-public-metadata.py`、`python3 scripts/check-privacy.py` を実行します。Git初期化前のexport treeは `python3 scripts/check-privacy.py --directory .` で検査できます。
-アプリは `bash scripts/build-app.sh` で作成し、`STUDIO_TEST_BUNDLE="dist/Attune.app" python3 scripts/test-public-metadata.py` と `dist/Attune.app/Contents/MacOS/Attune --verify-installation` で同梱情報を検証します。
+アプリは `bash scripts/build-app.sh` で作成し、`STUDIO_TEST_BUNDLE="dist/Iterune.app" python3 scripts/test-public-metadata.py` と `dist/Iterune.app/Contents/MacOS/Iterune --verify-installation` で同梱情報を検証します。
 
 テストは合成Skill・履歴と一時directory・隔離DBを使います。通常suiteでは実AI接続・実host履歴のopt-in testsを有効化しません。
 
@@ -13,7 +13,7 @@ macOS上で `swift build`、`swift test`、`python3 scripts/test-public-metadata
 - 履歴の完全本文一致・複数候補・手動関連付け・旧未検証・不明、再取込時の関連付けと評価の保持。
 - source origin保護、固定Publish要求、byte-exact比較、private backup、atomic replacement、部分失敗と外部変更下の編集保持。
 - SQLite・旧backup互換、復元・競合・破損復旧。実ユーザーのDBやKeychainをテストに使いません。
-- Attuneのproduct/app表示・更新先、別repositoryや不正URLの拒否、404・通信失敗時の安全な扱い。
+- Iteruneのproduct/app表示・更新先、別repositoryや不正URLの拒否、404・通信失敗時の安全な扱い。
 
 ## 未検証・制約
 
@@ -24,10 +24,9 @@ privacy scannerはヒューリスティックです。成功しても個人情�
 
 ## ローカル確認 — 2026-09-23
 
-- `swift build` とnative arm64の `bash scripts/build-app.sh` が成功。product/executable/app表示はAttune、4言語resourceの同梱検証も成功。
-- Swift suiteは111件: **106 PASS / 5 SKIP / 0 FAIL**。SKIPは明示opt-inが必要な実履歴・CLI診断・短文翻訳・長文翻訳・AI改善。実AI接続は行っていません。
-- Python公開metadata検査は6 PASS（生成app指定でも6 PASS）。更新先・別repository拒否・404・通信失敗は合成HTTP応答で検証。
-- source 78ファイル、app 10ファイルのprivacy検査は検出0。個人名のない一時build pathで生成し、Developer ID/公証は使用せずlocal ad-hoc署名のみ。
-- 専用bundle/UserDefaults・DB・合成Skill・注入した探索root/資格情報/HTTPのGUIで、Attune表示、3agent切替・バッジのアクセシビリティ名、4言語の主画面、履歴根拠・編集基準・AI送信OFF、下書き保存、synced元へのPublish禁止とライブラリ改善の導線を確認。
-- 更新設定画面のGUI確認は未完了です。履歴選択欄は言語切替直後に前の言語が残る場合があり、即時切替の全画面追従は未検証です。通常利用中のSkill/DB/Keychain/host設定は使用・変更していません。
-- 環境: macOS 26.5.1、Apple M4 arm64、Swift 6.3.3、Xcode 26.6。正式署名・公証、Intel/macOS 14実機は未実施です。
+- `swift build`、native arm64の `bash scripts/build-app.sh` が成功。product/executable/display nameはIterune、`Iterune.app`の4言語resourceを `--verify-installation` で確認。
+- Swift suiteは111件: **106 PASS / 5 SKIP / 0 FAIL**。実履歴・CLI診断・短文翻訳・長文翻訳・AI改善のlive opt-in testsは無効のまま。通常suiteは合成fixtureを使用。
+- Python公開metadata検査は **8 PASS**（生成app指定でも8 PASS）。3 READMEの言語切替・相対リンク・section構成、product/app/予定archive名を検証。更新先、別repository・不正URLの拒否、404・通信失敗は合成HTTPで検証。
+- Git管理情報・生成物を含まない内容exportの80ファイルと、生成appの10ファイルでprivacy検査が成功。検出0はヒューリスティックの確認範囲に限る。Developer ID/公証は使用せずlocal ad-hoc署名のみ。
+- GUI smokeはテスト用の隔離設定が成立しなかったため中断。GUI検証成功とは扱わない。window/menu/About、Agent切替、履歴・改善・Publish保護、設定の更新リンクについて今回の隔離GUI確認は未完了。
+- 環境: macOS 26.5.1、Apple M4 arm64、Swift 6.3.3、Xcode 26.6。正式署名・公証、Intel/macOS 14実機は未実施。
