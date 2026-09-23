@@ -6,7 +6,12 @@ public final class StudioDatabase {
     private var handle: OpaquePointer?
     public let url: URL
     private var lastPayload: Data?
-    public init(url: URL) throws {
+    private let runtime: RuntimeDataConfiguration
+    public init(url: URL, runtime: RuntimeDataConfiguration? = nil) throws {
+        let runtime = try runtime ?? RuntimeDataConfiguration.resolve()
+        // Validate before mkdir, sqlite3_open, journal setup or schema initialization.
+        try runtime.validateDatabase(url)
+        self.runtime = runtime
         self.url = url
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         guard sqlite3_open_v2(url.path, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK else {
@@ -54,6 +59,7 @@ public final class StudioDatabase {
         return data
     }
     public func save(_ snapshot: LibrarySnapshot) throws {
+        try runtime.validateDatabase(url)
         try LibraryBackup.validate(snapshot)
         let data = try JSONEncoder().encode(snapshot)
         try execute("BEGIN IMMEDIATE")

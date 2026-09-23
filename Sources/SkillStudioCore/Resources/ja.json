@@ -396,5 +396,14 @@
   "Publish library version v{0}": "反映するライブラリ版: v{0}",
   "This confirmation is fixed to the displayed version and source bytes. Changes require a new confirmation.": "この確認は表示中の版と元ファイルのbytesに固定されています。状態が変わった場合は再確認が必要です。",
   "Source: {0} bytes → Library: {1} bytes": "元ファイル: {0} bytes → ライブラリ版: {1} bytes",
-  "I reviewed this source-to-library diff and want to replace the source file.": "元ファイルから編集版への差分を確認し、元ファイルを置き換えます。"
+  "I reviewed this source-to-library diff and want to replace the source file.": "元ファイルから編集版への差分を確認し、元ファイルを置き換えます。",
+  "Development requires an explicit, absolute SKILL_STUDIO_DATA_DIR. Production data was not opened. Use scripts/run-gui-smoke.sh to create an isolated run.": "開発実行には絶対パスのSKILL_STUDIO_DATA_DIRが必要です。通常データは開いていません。scripts/run-gui-smoke.shで隔離環境を作成してください。",
+  "This development data directory is not safe. Choose a new private directory outside production storage. Production data was not opened.": "この開発用ディレクトリは安全に使用できません。通常の保存先とは別の新しい非公開ディレクトリを指定してください。通常データは開いていません。",
+  "Development data must start in an empty directory or an existing marked fixture directory. Existing data was not opened.": "開発用データには空のディレクトリ、または隔離マーカーのある既存fixtureディレクトリが必要です。既存データは開いていません。",
+  "The isolated directory changed or contains an unsafe link. Stop and create a new isolated run.": "隔離ディレクトリが変更されたか、安全でないリンクが含まれています。停止して新しい隔離環境を作成してください。",
+  "Isolated development uses fixtures only. AI, Keychain, host history and source publishing are disabled.": "隔離開発ではfixtureのみを使用します。AI・Keychain・実履歴・元ファイルへのPublishは無効です。",
+  "Development fixtures · production data is not connected": "開発用fixture · 通常データには接続していません",
+  "Iterune — Development": "Iterune — 開発用",
+  "Development startup blocked": "開発起動を停止しました",
+  "Quit": "終了"
 }

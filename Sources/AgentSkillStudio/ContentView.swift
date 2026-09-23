@@ -5,12 +5,18 @@ import SkillStudioCore
 struct ContentView: View {
     @EnvironmentObject private var store: StudioStore
     @State private var showSources = false
-    @AppStorage("studio.dismissedSetup") private var dismissedSetup = false
+    @State private var dismissedSetup = false
     var body: some View {
         HStack(spacing: 0) {
             rail
             sidebar
             VStack(spacing: 0) {
+                if store.isDevelopment {
+                    Label(L("Development fixtures · production data is not connected"), systemImage: "testtube.2")
+                        .font(.callout.bold()).padding(12).frame(maxWidth: .infinity)
+                        .background(.yellow.opacity(0.16))
+                        .accessibilityIdentifier("development-data-mode")
+                }
                 if !dismissedSetup { setupBanner }
                 if let skill = store.selectedSkill {
                     SkillDetailView(skill: skill).id(skill.id)
@@ -22,6 +28,8 @@ struct ContentView: View {
             }
         }
         .tint(StudioTheme.accent).foregroundStyle(StudioTheme.ink)
+        .onAppear { dismissedSetup = store.preferences.bool(forKey: "studio.dismissedSetup") }
+        .onChange(of: dismissedSetup) { _, value in store.preferences.set(value, forKey: "studio.dismissedSetup") }
         .onChange(of: store.selectedAgent) { _, _ in store.selectFirst() }
         .onChange(of: store.showDemo) { _, _ in store.selectFirst() }
         .onChange(of: store.search) { _, _ in store.selectFirst() }

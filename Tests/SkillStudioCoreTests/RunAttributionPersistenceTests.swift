@@ -131,7 +131,7 @@ final class RunAttributionPersistenceTests: XCTestCase {
         XCTAssertEqual(legacy.runs[0].artifacts,captured.artifacts)
         XCTAssertEqual(legacy.deletedRunIDs,original.deletedRunIDs); XCTAssertEqual(legacy.historyPolicy,original.historyPolicy)
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        _ = try prepareTestRuntime(at: root)
         defer { try? FileManager.default.removeItem(at:root) }
         // Existing format-1 backup, including a legacy payload and its original checksum.
         let oldURL = root.appendingPathComponent("old.skillstudio")
@@ -145,13 +145,13 @@ final class RunAttributionPersistenceTests: XCTestCase {
         XCTAssertEqual(ambiguousVersion.content,"A")
         snapshot.runs.append(imported(snapshot))
         let dbURL = root.appendingPathComponent("test.sqlite")
-        do { let db = try StudioDatabase(url:dbURL); try db.save(snapshot) }
-        XCTAssertEqual(try StudioDatabase(url:dbURL).load(),snapshot)
+        do { let db = try isolatedTestDatabase(url:dbURL); try db.save(snapshot) }
+        XCTAssertEqual(try isolatedTestDatabase(url:dbURL).load(),snapshot)
         let backup = root.appendingPathComponent("test.skillstudio")
         try LibraryBackup.write(snapshot,to:backup)
         XCTAssertEqual(try LibraryBackup.read(from:backup),snapshot)
         snapshot.runs[0].versionID = UUID()
         XCTAssertThrowsError(try LibraryBackup.validate(snapshot))
-        XCTAssertThrowsError(try StudioDatabase(url:dbURL).save(snapshot))
+        XCTAssertThrowsError(try isolatedTestDatabase(url:dbURL).save(snapshot))
     }
 }

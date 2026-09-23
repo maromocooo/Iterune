@@ -396,5 +396,14 @@
   "Publish library version v{0}": "發佈資料庫版本 v{0}",
   "This confirmation is fixed to the displayed version and source bytes. Changes require a new confirmation.": "此確認固定為顯示的版本和來源檔案位元組。狀態變更後需要重新確認。",
   "Source: {0} bytes → Library: {1} bytes": "來源檔案：{0} 位元組 → 資料庫版本：{1} 位元組",
-  "I reviewed this source-to-library diff and want to replace the source file.": "我已檢查來源到資料庫版本的差異，並要替換來源檔案。"
+  "I reviewed this source-to-library diff and want to replace the source file.": "我已檢查來源到資料庫版本的差異，並要替換來源檔案。",
+  "Development requires an explicit, absolute SKILL_STUDIO_DATA_DIR. Production data was not opened. Use scripts/run-gui-smoke.sh to create an isolated run.": "開發執行需要明確指定絕對路徑 SKILL_STUDIO_DATA_DIR。未開啟正式資料。請使用 scripts/run-gui-smoke.sh 建立隔離環境。",
+  "This development data directory is not safe. Choose a new private directory outside production storage. Production data was not opened.": "此開發資料目錄無法安全使用。請選擇正式儲存位置之外的新私人目錄。未開啟正式資料。",
+  "Development data must start in an empty directory or an existing marked fixture directory. Existing data was not opened.": "開發資料必須使用空目錄或已有隔離標記的測試目錄。未開啟現有資料。",
+  "The isolated directory changed or contains an unsafe link. Stop and create a new isolated run.": "隔離目錄已發生變更或包含不安全的連結。請停止並建立新的隔離環境。",
+  "Isolated development uses fixtures only. AI, Keychain, host history and source publishing are disabled.": "隔離開發僅使用測試資料。AI、鑰匙圈、真實歷史記錄及原始檔案發佈均已停用。",
+  "Development fixtures · production data is not connected": "開發測試資料 · 未連接正式資料",
+  "Iterune — Development": "Iterune — 開發模式",
+  "Development startup blocked": "已阻止開發啟動",
+  "Quit": "結束"
 }

@@ -24,9 +24,14 @@ privacy scannerはヒューリスティックです。成功しても個人情�
 
 ## ローカル確認 — 2026-09-23
 
-- `swift build`、native arm64の `bash scripts/build-app.sh` が成功。product/executable/display nameはIterune、`Iterune.app`の4言語resourceを `--verify-installation` で確認。
-- Swift suiteは111件: **106 PASS / 5 SKIP / 0 FAIL**。実履歴・CLI診断・短文翻訳・長文翻訳・AI改善のlive opt-in testsは無効のまま。通常suiteは合成fixtureを使用。
-- Python公開metadata検査は **8 PASS**（生成app指定でも8 PASS）。3 READMEの言語切替・相対リンク・section構成、product/app/予定archive名を検証。更新先、別repository・不正URLの拒否、404・通信失敗は合成HTTPで検証。
-- Git管理情報・生成物を含まない内容exportの80ファイルと、生成appの10ファイルでprivacy検査が成功。検出0はヒューリスティックの確認範囲に限る。Developer ID/公証は使用せずlocal ad-hoc署名のみ。
-- GUI smokeはテスト用の隔離設定が成立しなかったため中断。GUI検証成功とは扱わない。window/menu/About、Agent切替、履歴・改善・Publish保護、設定の更新リンクについて今回の隔離GUI確認は未完了。
+- `swift build`、native arm64の `bash scripts/build-app.sh` が成功。通常Release buildはproduction互換のbundle IDと保存先を維持。`Iterune.app`の同梱resourceを `--verify-installation` で確認。
+- Swift suiteは127件: **122 PASS / 5 SKIP / 0 FAIL**。実履歴・CLI診断・短文翻訳・長文翻訳・AI改善のlive opt-in testsは無効のまま。通常suiteは合成fixtureのみ。
+- Debug/Previewの明示root必須、productionとその子・親領域、同じphysical directoryの大文字小文字違い、symlink、hardlink、markerなし既存DBの拒否、独立したfixture DBの再読込とメモリ設定を検証。明示的なproduction設定でもDebugのDB guardは迂回できない。
+- Python公開metadata検査は **8 PASS**（生成production app指定でも8 PASS）。3 READMEの言語切替・相対リンク・section、product/app名、4言語キー・placeholder、更新先とURL拒否の既存検査を維持。
+- GUI launcherの合成filesystem検査は **4 PASS**。runごとのprivate root、誤ったbundleの拒否、DB/WAL/SHM fingerprint、所有するfixtureだけのcleanupを検証。shell構文検査もPASS。
+- 生成物とGit管理情報を除いた87ファイルのsource export、通常Release appの10ファイル、開発appの10ファイルでprivacy検査が成功。Developer ID/公証は使用せずlocal ad-hoc署名のみ。
+- 専用launcherで新規buildした開発appを起動。Accessibilityと画面で開発表示、合成Skillのみの一覧、合成run・feedbackと版の根拠、改善画面の参考run／基準版、run送信opt-in OFF、保護sourceのPublish無効を確認。通常DBはSQLiteで開かず、起動前後のDB/WAL/SHMのsize・mtime・SHA-256が一致。実AI・実履歴・source Publishは未実行。
+- Xcode Preview canvas自体、全言語の全画面、長時間GUI操作は未検証。Preview環境フラグとfixture storeの起動拒否／許可は合成テストで確認。
 - 環境: macOS 26.5.1、Apple M4 arm64、Swift 6.3.3、Xcode 26.6。正式署名・公証、Intel/macOS 14実機は未実施。
+
+開発用markerと再検証は誤った起動先を防ぐための仕組みです。同じOSユーザー権限の別processに対するsandboxではありません。既存の古いbinaryには効かないため、GUI検証には専用launcherの新しいbundleを使います。

@@ -68,6 +68,7 @@ class PublicMetadataTests(unittest.TestCase):
             self.assertTrue((app / 'Contents/MacOS' / info['CFBundleExecutable']).is_file())
             # Storage identity is independent from public product branding.
             self.assertEqual(info['CFBundleIdentifier'], 'dev.agentskillstudio.mac')
+            self.assertEqual(info['IteruneRuntimeDataMode'], 'production')
             self.assertTrue((app / 'Contents/Resources/Iterune_SkillStudioCore.bundle').is_dir())
 
     def test_multilingual_readmes_share_navigation_and_structure(self):

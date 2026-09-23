@@ -4,16 +4,12 @@ import SkillStudioCore
 
 @MainActor
 final class StudioStore: ObservableObject {
-    @Published var language = Localization.language {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: Localization.preferenceKey); notice = nil }
+    @Published var language: AppLanguage {
+        didSet { preferences.set(language.rawValue, forKey: Localization.preferenceKey); notice = nil }
     }
-    @Published var connection: AIConnectionSettings = {
-        guard let data = UserDefaults.standard.data(forKey: "studio.aiConnection"),
-              let saved = try? JSONDecoder().decode(AIConnectionSettings.self, from: data) else { return AIConnectionSettings() }
-        return saved
-    }() {
+    @Published var connection: AIConnectionSettings {
         didSet {
-            if let data = try? JSONEncoder().encode(connection) { UserDefaults.standard.set(data, forKey: "studio.aiConnection") }
+            if let data = try? JSONEncoder().encode(connection) { preferences.set(data, forKey: "studio.aiConnection") }
             // Concurrency changes apply to the next translation; preserve current work and cache.
             if oldValue.cacheScope != connection.cacheScope {
                 translationSession.reset(clearCache: true); translationConsent = false
@@ -22,8 +18,12 @@ final class StudioStore: ObservableObject {
     }
     let translationSession = TranslationSession()
     var translationConsent = false
-    let credentials: any CredentialStore = KeychainCredentialStore()
+    let credentials: any CredentialStore
+    let runtime: RuntimeDataConfiguration
+    let preferences: StudioPreferences
+    var isDevelopment: Bool { runtime.isDevelopment }
     func translationService() throws -> any SkillTranslationService {
+        try runtime.requireExternalServices()
         let provider = connection.provider
         if provider.isCLI {
             return ChunkedTranslationService(base: CLITranslationService(provider: provider,
@@ -34,20 +34,15 @@ final class StudioStore: ObservableObject {
         return ChunkedTranslationService(base: APITranslationService(provider: provider, model: connection.model, apiKey: key),
             maxConcurrentRequests: connection.maxConcurrentTranslations)
     }
-    @Published var improvementPreferences: ImprovementPreferences = {
-        if let data = UserDefaults.standard.data(forKey: "studio.improvementPreferences"),
-           let saved = try? JSONDecoder().decode(ImprovementPreferences.self, from: data) { return saved }
-        let shared = UserDefaults.standard.data(forKey: "studio.aiConnection")
-            .flatMap { try? JSONDecoder().decode(AIConnectionSettings.self, from: $0) } ?? AIConnectionSettings()
-        return ImprovementPreferences(shared: shared)
-    }() {
+    @Published var improvementPreferences: ImprovementPreferences {
         didSet {
             if let data = try? JSONEncoder().encode(improvementPreferences) {
-                UserDefaults.standard.set(data, forKey: "studio.improvementPreferences")
+                preferences.set(data, forKey: "studio.improvementPreferences")
             }
         }
     }
     func aiImprovementService(connection: AIConnectionSettings) throws -> any SkillImprovementService {
+        try runtime.requireExternalServices()
         guard ImprovementPreferences.normalizedModel(connection.model) != nil else {
             throw StudioError.message("Choose a model ID before generating an improvement.")
         }
@@ -68,7 +63,7 @@ final class StudioStore: ObservableObject {
     @Published private(set) var historyDiagnostics: [String: Int] = [:]
     private let runHistoryAdapters: [AgentKind: any RunHistoryAdapter] = [.codex: CodexRunHistoryAdapter(), .claude: ClaudeRunHistoryAdapter(), .gemini: GeminiRunHistoryAdapter()]
     func importHistory(for skill: Skill) async {
-        guard !importingHistory, !skill.isDemo, ready, library.historyPolicy.enabledAgents.contains(skill.agent),
+        guard !isDevelopment, !importingHistory, !skill.isDemo, ready, library.historyPolicy.enabledAgents.contains(skill.agent),
               library.historyPolicy.allows(skill.sourcePath), let adapter = runHistoryAdapters[skill.agent] else { return }
         importingHistory = true; historyStatus = nil; historyDiagnostics = [:]
         defer { importingHistory = false }
@@ -107,27 +102,39 @@ final class StudioStore: ObservableObject {
     let dataDirectory: URL
     let improvementService: any SkillImprovementService
 
-    init(service: any SkillImprovementService = LocalImprovementService()) {
+    init(runtime: RuntimeDataConfiguration, service: any SkillImprovementService = LocalImprovementService()) throws {
+        try runtime.prepare()
+        self.runtime = runtime
+        preferences = StudioPreferences(production: !runtime.isDevelopment)
+        Localization.preferences = preferences
+        language = Localization.language
+        let savedConnection = preferences.data(forKey: "studio.aiConnection")
+            .flatMap { try? JSONDecoder().decode(AIConnectionSettings.self, from: $0) } ?? AIConnectionSettings()
+        improvementPreferences = preferences.data(forKey: "studio.improvementPreferences")
+            .flatMap { try? JSONDecoder().decode(ImprovementPreferences.self, from: $0) } ?? ImprovementPreferences(shared: savedConnection)
+        connection = savedConnection
+        credentials = runtime.isDevelopment ? DevelopmentCredentialStore() : KeychainCredentialStore()
         improvementService = service
-        let env = ProcessInfo.processInfo.environment
-        dataDirectory = env["SKILL_STUDIO_DATA_DIR"].map { URL(fileURLWithPath: $0) }
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("AgentSkillStudio")
+        dataDirectory = runtime.directory
+        try runtime.validateDatabase(dataDirectory.appendingPathComponent("studio.sqlite"))
+        try runtime.validateDatabase(dataDirectory.appendingPathComponent(".studio.lock"))
         do {
             libraryLease = try LibraryLease(directory: dataDirectory)
-            let db = try StudioDatabase(url: dataDirectory.appendingPathComponent("studio.sqlite"))
+            let db = try StudioDatabase(url: dataDirectory.appendingPathComponent("studio.sqlite"), runtime: runtime)
             var snapshot = try db.load()
             if !snapshot.skills.isEmpty { try automaticBackup(snapshot) }
-            if UserDefaults.standard.object(forKey: "studio.historyPolicyMigrated") == nil,
-               UserDefaults.standard.object(forKey: "studio.importsCodexHistory") as? Bool == false {
+            if preferences.object(forKey: "studio.historyPolicyMigrated") == nil,
+               preferences.object(forKey: "studio.importsCodexHistory") as? Bool == false {
                 snapshot.historyPolicy.enabledAgents.remove(.codex)
             }
             for index in snapshot.improvements.indices where snapshot.improvements[index].status == "generating" {
                 snapshot.improvements[index].status = "interrupted"
             }
-            DemoLibrary.seed(into: &snapshot)
+            if runtime.isDevelopment { try DevelopmentFixtures.seed(into: &snapshot, runtime: runtime) }
+            else { DemoLibrary.seed(into: &snapshot) }
             try db.save(snapshot)
             database = db; library = snapshot
-            UserDefaults.standard.set(true, forKey: "studio.historyPolicyMigrated")
+            preferences.set(true, forKey: "studio.historyPolicyMigrated")
             showDemo = ProcessInfo.processInfo.arguments.contains("--demo") || !snapshot.skills.contains(where: { !$0.isDemo })
             selectFirst()
         } catch { self.error = L("Unable to open the library: {0}", error.localizedDescription) }
@@ -161,6 +168,7 @@ final class StudioStore: ObservableObject {
     }
     func scan() async {
         guard !scanning, ready else { return }
+        if isDevelopment { notice = L("Development fixtures · production data is not connected"); return }
         scanning = true
         defer { scanning = false }
         let context = DiscoveryContext(projects: library.projectPaths.map { URL(fileURLWithPath: $0) })
@@ -182,6 +190,7 @@ final class StudioStore: ObservableObject {
     }
     private var hasScanned = false
     func addProject() {
+        guard !isDevelopment else { error = RuntimeDataError.externalServicesDisabled.localizedDescription; return }
         let panel = NSOpenPanel()
         panel.title = L("Choose a project to scan")
         panel.message = L("Scan .claude/skills, .agents/skills, .codex/skills, and .gemini/skills in this project.")
@@ -216,18 +225,21 @@ final class StudioStore: ObservableObject {
     @Published private(set) var publishingPaths = Set<String>()
     @Published private(set) var sourceNeedsRecheck = Set<String>()
     func checkSourceEligibility(_ skill: Skill) async -> PublishEligibility {
+        guard !isDevelopment else { return .unavailable(.unknownOrigin) }
         let snapshot = library, context = discoveryContext
         return await Task.detached(priority: .userInitiated) {
             SourcePublisher.eligibility(skillID: skill.id, in: snapshot, context: context)
         }.value
     }
     func preparePublish(_ skill: Skill) throws -> PublishRequest {
+        try runtime.requireExternalServices()
         guard let path = skill.sourcePath, !publishingPaths.contains(path), !sourceNeedsRecheck.contains(path), !scanning else {
             throw SourcePublishError.blocked(.staleConfirmation)
         }
         return try SourcePublisher.prepare(skillID: skill.id, in: library, context: discoveryContext)
     }
     func publish(_ request: PublishRequest) {
+        guard !isDevelopment else { error = RuntimeDataError.externalServicesDisabled.localizedDescription; return }
         guard !publishingPaths.contains(request.targetPath), !sourceNeedsRecheck.contains(request.targetPath), !scanning else { return }
         publishingPaths.insert(request.targetPath)
         defer { publishingPaths.remove(request.targetPath) }
@@ -264,6 +276,7 @@ final class StudioStore: ObservableObject {
     var canRestoreLibrary: Bool { libraryLease != nil }
     var backupDirectory: URL { dataDirectory.appendingPathComponent("LibraryBackups") }
     private func automaticBackup(_ snapshot: LibrarySnapshot) throws {
+        try runtime.validateDatabase(backupDirectory.appendingPathComponent(".isolation-check"))
         try FileManager.default.createDirectory(at: backupDirectory, withIntermediateDirectories: true)
         let existing = (try? FileManager.default.contentsOfDirectory(at: backupDirectory, includingPropertiesForKeys: [.creationDateKey])) ?? []
         let recent = existing.filter { $0.lastPathComponent.hasPrefix("auto-") }.sorted { $0.lastPathComponent > $1.lastPathComponent }
@@ -273,6 +286,7 @@ final class StudioStore: ObservableObject {
         for old in recent.dropFirst(9) { try? FileManager.default.removeItem(at: old) }
     }
     func exportLibrary() {
+        guard !isDevelopment else { error = RuntimeDataError.externalServicesDisabled.localizedDescription; return }
         let panel = NSSavePanel(); panel.nameFieldStringValue = "Iterune-backup.skillstudio"
         panel.message = L("Backups contain private skill and conversation text, but no API keys. Store them securely.")
         guard ready, panel.runModal() == .OK, let url = panel.url else { return }
@@ -280,6 +294,7 @@ final class StudioStore: ObservableObject {
         catch { self.error = error.localizedDescription }
     }
     func restoreLibrary(from url: URL) throws {
+        try runtime.requireExternalServices()
         guard canRestoreLibrary else { throw StudioError.message("Close the other app before restoring this library.") }
         let restored = try LibraryBackup.read(from: url)
         try FileManager.default.createDirectory(at: backupDirectory, withIntermediateDirectories: true)
@@ -287,7 +302,7 @@ final class StudioStore: ObservableObject {
             try LibraryBackup.write(library, to: backupDirectory.appendingPathComponent("before-restore-\(UUID().uuidString).skillstudio"))
             try database.save(restored)
         } else {
-            database = try LibraryRecovery.replaceUnreadableDatabase(at: dataDirectory.appendingPathComponent("studio.sqlite"), with: restored)
+            database = try LibraryRecovery.replaceUnreadableDatabase(at: dataDirectory.appendingPathComponent("studio.sqlite"), with: restored, runtime: runtime)
         }
         libraryEpoch = UUID(); library = restored; translationSession.reset(clearCache: true)
         sourceNeedsRecheck = Set(restored.skills.compactMap(\.sourcePath))
@@ -308,6 +323,7 @@ final class StudioStore: ObservableObject {
         do { try commit { $0.improvements.removeAll { $0.id == id } } } catch { self.error = error.localizedDescription }
     }
     func setHistoryPolicy(_ policy: HistoryPolicy) {
+        guard !isDevelopment else { return }
         do { try commit { $0.historyPolicy = policy } } catch { self.error = error.localizedDescription }
     }
     func deleteRun(_ id: UUID) {

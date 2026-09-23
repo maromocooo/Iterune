@@ -103,13 +103,16 @@ public struct HistoryPolicy: Codable, Equatable, Sendable {
 
 /// Caller must hold LibraryLease and close any existing database before invoking recovery.
 public enum LibraryRecovery {
-    public static func replaceUnreadableDatabase(at target: URL, with snapshot: LibrarySnapshot) throws -> StudioDatabase {
+    public static func replaceUnreadableDatabase(at target: URL, with snapshot: LibrarySnapshot,
+                                                runtime: RuntimeDataConfiguration? = nil) throws -> StudioDatabase {
+        let runtime = try runtime ?? RuntimeDataConfiguration.resolve()
+        try runtime.validateDatabase(target)
         try LibraryBackup.validate(snapshot)
         let fm = FileManager.default
         let recovery = target.deletingLastPathComponent().appendingPathComponent("Recovery-" + UUID().uuidString)
         try fm.createDirectory(at: recovery, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         let staged = recovery.appendingPathComponent("replacement.sqlite")
-        do { let db = try StudioDatabase(url: staged); try db.save(snapshot) }
+        do { let db = try StudioDatabase(url: staged, runtime: runtime); try db.save(snapshot) }
         var moved: [(URL, URL)] = []
         var installed = false
         do {
@@ -121,7 +124,7 @@ public enum LibraryRecovery {
                 }
             }
             try fm.moveItem(at: staged, to: target); installed = true
-            let db = try StudioDatabase(url: target)
+            let db = try StudioDatabase(url: target, runtime: runtime)
             guard try db.load() == snapshot else { throw StudioError.message("Recovered library could not be verified.") }
             return db
         } catch {

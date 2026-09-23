@@ -5,12 +5,21 @@ cd "$(dirname "$0")/.."
 # Set STUDIO_BUILD_DIR to keep compiler output outside the source tree.
 BUILD_DIR="${STUDIO_BUILD_DIR:-.build}"
 OUTPUT_DIR="${STUDIO_OUTPUT_DIR:-dist}"
+CONFIGURATION=release
+BUNDLE_ID=dev.agentskillstudio.mac
+DATA_MODE=production
+if [[ "${STUDIO_DEVELOPMENT:-0}" == "1" ]]; then
+  CONFIGURATION=debug
+  BUNDLE_ID=dev.agentskillstudio.mac.development
+  DATA_MODE=isolatedDevelopment
+  [[ -z "${STUDIO_SIGN_IDENTITY:-}" ]] || { echo 'Development smoke does not use distribution signing.' >&2; exit 1; }
+fi
 ARCH_ARGS=()
 if [[ "${STUDIO_UNIVERSAL:-0}" == "1" ]]; then
   ARCH_ARGS=(--arch arm64 --arch x86_64)
 fi
-swift build -c release --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}
-BIN_DIR=$(swift build -c release --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"} --show-bin-path)
+swift build -c "$CONFIGURATION" --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}
+BIN_DIR=$(swift build -c "$CONFIGURATION" --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"} --show-bin-path)
 APP="$OUTPUT_DIR/Iterune.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/Iterune" "$APP/Contents/MacOS/Iterune"
@@ -20,12 +29,13 @@ rm -rf "$APP/Contents/Resources/Iterune_SkillStudioCore.bundle"
 cp -R "$BIN_DIR/Iterune_SkillStudioCore.bundle" "$APP/Contents/Resources/"
 cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp BRAND_ASSETS.md "$APP/Contents/Resources/BRAND_ASSETS.md"
-cat > "$APP/Contents/Info.plist" <<'PLIST'
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>CFBundleExecutable</key><string>Iterune</string>
-  <key>CFBundleIdentifier</key><string>dev.agentskillstudio.mac</string>
+  <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
+  <key>IteruneRuntimeDataMode</key><string>$DATA_MODE</string>
   <key>CFBundleName</key><string>Iterune</string>
   <key>CFBundleDisplayName</key><string>Iterune</string>
   <key>CFBundlePackageType</key><string>APPL</string>
