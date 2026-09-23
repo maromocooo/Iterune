@@ -1,0 +1,28 @@
+.build/
+.build-*/
+.swiftpm/
+dist/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+work/
+*.app/
+*.dSYM/
+*.zip
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.env
+.env.*
+!.env.example
+
+# Local credentials, exports and private handoff notes
+*.pem
+*.p12
+*.key
+auth.json
+credentials.json
+*.local.md
+
+# Private library exports
+*.skillstudio
