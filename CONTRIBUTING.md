@@ -6,6 +6,8 @@ Run `swift build`, `swift test`, `python3 scripts/test-public-metadata.py` and `
 
 `README.md` is canonical. When user-facing README content changes, update `README.ja.md` and `README.zh-CN.md` in the same change. Keep current capabilities, limitations and future directions consistent across all three.
 
+GUI development and Preview runs require an explicit isolated `SKILL_STUDIO_DATA_DIR`; Debug and Preview never fall back to the production library. Use `bash scripts/run-gui-smoke.sh` for a fresh private fixture environment and a verified development bundle, or `--headless` for the store check. The launcher retains evidence by default and checks production files with read-only stat/hash, never SQLite. Development uses in-memory preferences and disables real discovery/history, Keychain, AI and source Publish. Do not launch an arbitrary existing app bundle for GUI tests. Run `python3 scripts/test-gui-smoke.py` and `bash -n scripts/run-gui-smoke.sh` when changing this path.
+
 Keep UI in `Sources/AgentSkillStudio` and portable application logic in `Sources/SkillStudioCore`. Update all four localization catalogs together. Changes to source skills require the explicit Publish flow; AI responses are proposals, never direct file operations.
 
 Never commit real skills, prompts, outputs, run history, SQLite databases, auth files, API keys, local paths, account email addresses or conversation IDs. Use synthetic examples and inspect `git diff --cached` before committing. Screenshots and logs can contain private data too.

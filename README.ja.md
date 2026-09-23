@@ -91,11 +91,21 @@ bash scripts/build-app.sh
 open "dist/Iterune.app"
 ```
 
-開発時は`swift run Iterune`、またはXcodeで`Package.swift`を開き、**Iterune / My Mac**を選んで実行できます。既定のローカルbuildはad-hoc署名で、Developer ID署名・公証は行いません。試すMac上でビルドする手順であり、署名済みアプリのダウンロード手順ではありません。
+開発・SwiftUI Previewでは、**隔離したデータディレクトリの明示指定が必須**です。Debug buildが通常ライブラリへfallbackすることはありません。専用launcherは毎回新しい開発用アプリをbuildし、合成Skill・履歴だけを使います。外部サービスとsource Publishは無効で、通常DB・WAL・SHMのファイルfingerprintが変わらないことも確認します。
+
+```sh
+bash scripts/run-gui-smoke.sh
+# または、新しい空のprivateディレクトリを指定してDebug版を起動:
+SKILL_STUDIO_DATA_DIR="$(mktemp -d /private/tmp/iterune-dev.XXXXXX)" swift run Iterune
+```
+
+Xcodeでは、実行・Previewの環境変数`SKILL_STUDIO_DATA_DIR`に空のprivateディレクトリを指定してください。未指定・相対path・通常領域・fixtureのmarkerがない既存データは拒否します。開発設定はメモリ内に保持し、API/CLI経由のAI・Keychain・実履歴・source Publishは利用しません。開発アプリを終了するとsmoke検証が完了し、privateな検証記録は既定で残ります。`--headless`はウィンドウを開かずfixture storeを確認します。
+
+通常のReleaseアプリは、既存ライブラリの保存先と設定を引き続き使います。ローカルbuildはad-hoc署名で、Developer ID署名・公証は行いません。署名済みアプリのダウンロード手順ではありません。
 
 Universal版は`STUDIO_UNIVERSAL=1 bash scripts/build-app.sh`で作成できます。詳しくは[ビルド・配布手順](RELEASING.md)と[検証範囲・既知の制約](VERIFICATION.md)を参照してください。Intel向けのcross-compileは、Intel実機での検証とは別です。
 
-起動時に対応するSkillの保存場所をscanし、見つからなければデモライブラリを開きます。**ローカルSkill / デモライブラリ**は切替可能です。デモモードでも実Skillの検出は動くため、隔離されたテスト環境ではありません。
+通常のproduction起動時に対応するSkillの保存場所をscanし、見つからなければデモライブラリを開きます。**ローカルSkill / デモライブラリ**は切替可能です。デモモードでも実Skillの検出は動くため、隔離されたテスト環境ではありません。
 
 ## Privacy
 

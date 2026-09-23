@@ -11,3 +11,5 @@
 - 標準確認はmacOSで `swift build`、`swift test`、`python3 scripts/check-privacy.py`、必要なlocal app buildは `bash scripts/build-app.sh`。変更した挙動の回帰テストを追加し、4言語のキーとplaceholder整合を保ちます。PASS/FAIL/SKIP/未実施を区別し、必要な結果だけVERIFICATION.mdへ記録します。
 - 実データ・認証情報・個人path・監査の生レポートをGitや配布物へ含めません。公開用commit identityを確認し、staging対象を明示します。privacy scriptは最新treeのヒューリスティックで、Git履歴やGitHub上の公開面を保証しません。
 - ソース公開と正式アプリ配布は別の判断です。署名・公証、tag/Release、visibility変更、履歴書換え、mainへのmergeは個別の許可範囲に従います。現在の制約と配布手順はRELEASE_PLAN.md / RELEASING.mdを参照してください。
+
+- GUI developmentとPreviewは明示的な隔離data rootを必須とし、通常ライブラリへfallbackさせません。`scripts/run-gui-smoke.sh`で毎回新しいfixture環境と正確な開発bundleを作ります。通常DBはSQLiteで開かず、必要な不変確認はread-onlyのfile fingerprintだけにします。

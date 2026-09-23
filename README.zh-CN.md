@@ -91,11 +91,21 @@ bash scripts/build-app.sh
 open "dist/Iterune.app"
 ```
 
-开发时可以运行 `swift run Iterune`，或在 Xcode 中打开 `Package.swift`，选择 **Iterune / My Mac**。本地应用构建默认采用 ad-hoc 签名，没有 Developer ID 签名或公证。请在计划试用的 Mac 上构建；这不是下载正式签名应用的流程。
+开发和 SwiftUI Preview **必须明确指定隔离的数据目录**。Debug 构建不会回退到正常应用库。专用启动脚本每次都会构建新的开发应用，仅使用合成 Skill 和历史记录，禁用外部服务和 source Publish，并确认正常 DB、WAL、SHM 的文件指纹未变。
+
+```sh
+bash scripts/run-gui-smoke.sh
+# 或指定新的、空的私有目录来启动 Debug 构建：
+SKILL_STUDIO_DATA_DIR="$(mktemp -d /private/tmp/iterune-dev.XXXXXX)" swift run Iterune
+```
+
+在 Xcode 的运行或 Preview 环境中，将 `SKILL_STUDIO_DATA_DIR` 设为空的私有目录。未指定路径、相对路径、正常存储目录，以及缺少 fixture 标记的现有数据目录都会被拒绝。开发设置仅保存在内存中，不使用 API/CLI AI、Keychain、真实历史或 source Publish。退出开发应用后完成 smoke 检查，默认保留私有验证记录。`--headless` 可不打开窗口，仅检查 fixture store。
+
+正常的 Release 应用仍使用既有的应用库位置和设置。本地构建采用 ad-hoc 签名，不使用 Developer ID 签名或公证；这不是下载正式签名应用的流程。
 
 可通过 `STUDIO_UNIVERSAL=1 bash scripts/build-app.sh` 构建 Universal 版本。详见[构建与发行流程](RELEASING.md)和[验证范围及已知限制](VERIFICATION.md)。为 Intel 交叉编译不能替代 Intel Mac 实机测试。
 
-启动时，Iterune 会扫描受支持的 Skill 位置；未发现 Skill 时打开演示库。可以在 **Local skills / Demo library** 之间切换。演示模式仍会执行 Skill 发现，不是隔离的测试环境。
+正常 production 启动时，Iterune 会扫描受支持的 Skill 位置；未发现 Skill 时打开演示库。可以在 **Local skills / Demo library** 之间切换。演示模式仍会执行 Skill 发现，不是隔离的测试环境。
 
 ## 隐私
 

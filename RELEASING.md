@@ -6,7 +6,7 @@
 リポジトリの公開設定、push、タグ作成、release公開はビルドスクリプトから行いません。
 App Store用のsandboxや審査対応は今回の配布経路に不要です。
 
-## 1. ローカル開発版
+## 1. ローカル配布build（production動作）
 
 ```sh
 swift build
@@ -16,7 +16,9 @@ bash scripts/package-release.sh
 ```
 
 `dist/Iterune-<version>-macOS-universal.zip` と `.sha256` を作ります。
-開発版はad-hoc署名です。`--verify-installation` でDBやSkillを開かず、4言語の同梱を検証します。Agentは画像を使わない文字バッジで表示します。
+このbuildは通常の保存先・設定を使うproduction動作で、ad-hoc署名です。`--verify-installation` でDBやSkillを開かず、4言語の同梱を検証します。Agentは画像を使わない文字バッジで表示します。
+GUI development / Previewには `bash scripts/run-gui-smoke.sh` を使います。専用launcherは新しいprivate領域・合成fixture・別bundle IDのDebugアプリを作り、`SKILL_STUDIO_DATA_DIR`を明示します。未指定なら起動を拒否し、通常ライブラリへfallbackしません。既存の配布appをGUI smokeに流用しないでください。
+
 GitHub ActionsのCIは未登録です。現在は上記のローカル確認を使います。CIを導入する場合もlive testsは有効化しません。
 
 ## 2. Developer ID署名と公証

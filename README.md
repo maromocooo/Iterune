@@ -91,11 +91,21 @@ bash scripts/build-app.sh
 open "dist/Iterune.app"
 ```
 
-For development, use `swift run Iterune`, or open `Package.swift` in Xcode and select the **Iterune / My Mac** scheme. By default, a local app build is ad-hoc signed, not Developer ID signed or notarized. Build on the Mac where you plan to try it; this is not a signed download workflow.
+For development and SwiftUI Preview, **an explicit isolated data directory is required**. Debug builds never fall back to the normal library. The dedicated launcher builds a fresh development app, uses synthetic skills/history, disables external services and source Publish, and checks that production DB/WAL/SHM file fingerprints remain unchanged:
+
+```sh
+bash scripts/run-gui-smoke.sh
+# Or start a Debug build with a new, empty private directory:
+SKILL_STUDIO_DATA_DIR="$(mktemp -d /private/tmp/iterune-dev.XXXXXX)" swift run Iterune
+```
+
+In Xcode, set `SKILL_STUDIO_DATA_DIR` to an empty private directory in the run/Preview environment. Missing, relative, production or unmarked existing data paths are refused. Development settings stay in memory; API/CLI AI, Keychain, host history and source publishing are disabled. Quit the development app to finish the smoke run; its private evidence is retained by default. `--headless` checks the fixture store without a window.
+
+The normal packaged Release app keeps its existing library location and preferences. A local app build is ad-hoc signed, not Developer ID signed or notarized; this is not a signed download workflow.
 
 An optional Universal build uses `STUDIO_UNIVERSAL=1 bash scripts/build-app.sh`. See [release/build procedures](RELEASING.md) and [verification coverage and known gaps](VERIFICATION.md) for details. Cross-compiling for Intel does not replace testing on an Intel Mac.
 
-On launch, Iterune scans supported skill locations. If none are found, it opens the demo library; you can switch between **Local skills** and **Demo library**. Demo mode is not an isolated test environment: discovery still runs.
+On a normal production launch, Iterune scans supported skill locations. If none are found, it opens the demo library; you can switch between **Local skills** and **Demo library**. Demo mode is not an isolated test environment: discovery still runs.
 
 ## Privacy
 
