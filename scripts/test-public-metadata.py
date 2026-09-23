@@ -56,7 +56,7 @@ class PublicMetadataTests(unittest.TestCase):
         self.assertNotIn('LLMを実装するまでは', guidance)
 
     def test_product_identity_and_app_bundle(self):
-        self.assertTrue((ROOT / 'README.md').read_text().startswith('# Attune\n'))
+        self.assertRegex((ROOT / 'README.md').read_text(), r'(?m)^# Attune$')
         self.assertIn('.executable(name: "Attune",', (ROOT / 'Package.swift').read_text())
         if os.environ.get('STUDIO_TEST_BUNDLE'):
             app = pathlib.Path(os.environ['STUDIO_TEST_BUNDLE'])
@@ -69,6 +69,26 @@ class PublicMetadataTests(unittest.TestCase):
             # Storage identity is independent from public product branding.
             self.assertEqual(info['CFBundleIdentifier'], 'dev.agentskillstudio.mac')
             self.assertTrue((app / 'Contents/Resources/Attune_SkillStudioCore.bundle').is_dir())
+
+    def test_multilingual_readmes_share_navigation_and_structure(self):
+        languages = [('README.md', 'English'), ('README.ja.md', '日本語'),
+                     ('README.zh-CN.md', '简体中文')]
+        counts = []
+        guidance = (ROOT / 'CONTRIBUTING.md').read_text()
+        for name, language in languages:
+            with self.subTest(document=name):
+                content = (ROOT / name).read_text()
+                expected = ' | '.join(
+                    f'**{label}**' if filename == name else f'[{label}]({filename})'
+                    for filename, label in languages)
+                self.assertEqual(content.splitlines()[0], expected)
+                self.assertRegex(content, r'(?m)^# Attune$')
+                self.assertIn('git clone https://github.com/maromocooo/Attune.git', content)
+                self.assertIn(name, guidance)
+                sections = re.findall(r'^## .+$', content, re.MULTILINE)
+                self.assertGreaterEqual(len(sections), 10)
+                counts.append(len(sections))
+        self.assertEqual(len(set(counts)), 1)
 
     def test_no_vendor_artwork_in_resources_or_local_app(self):
         forbidden = {'claude.icns', 'codex.icns', 'gemini.png'}
