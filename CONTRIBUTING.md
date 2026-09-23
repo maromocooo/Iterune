@@ -1,8 +1,10 @@
 # Contributing
 
-Attune is a Swift Package for macOS 14+. Contributions are licensed under MIT.
+Iterune is a Swift Package for macOS 14+. Contributions are licensed under MIT.
 
 Run `swift build`, `swift test`, `python3 scripts/test-public-metadata.py` and `python3 scripts/check-privacy.py` before a pull request. Tests use temporary fixtures; opt-in live tests contact a provider only when explicitly enabled. Do not enable live tests in CI.
+
+`README.md` is canonical. When user-facing README content changes, update `README.ja.md` and `README.zh-CN.md` in the same change. Keep current capabilities, limitations and future directions consistent across all three.
 
 Keep UI in `Sources/AgentSkillStudio` and portable application logic in `Sources/SkillStudioCore`. Update all four localization catalogs together. Changes to source skills require the explicit Publish flow; AI responses are proposals, never direct file operations.
 

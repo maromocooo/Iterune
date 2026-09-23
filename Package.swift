@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "Attune",
+    name: "Iterune",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Attune", targets: ["AgentSkillStudio"]),
+        .executable(name: "Iterune", targets: ["AgentSkillStudio"]),
         .library(name: "SkillStudioCore", targets: ["SkillStudioCore"])
     ],
     targets: [

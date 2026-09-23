@@ -116,7 +116,7 @@ struct LanguageSettingsView: View {
         status = nil; error = nil
         do {
             let service = try store.translationService()
-            let request = SkillTranslationRequest(content: "# Greeting\n\nHello, welcome to Attune.\n", language: store.language)
+            let request = SkillTranslationRequest(content: "# Greeting\n\nHello, welcome to Iterune.\n", language: store.language)
             testing = true
             testTask = Task {
                 do {

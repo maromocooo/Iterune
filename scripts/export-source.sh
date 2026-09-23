@@ -10,5 +10,5 @@ trap 'rm -rf "$EXPORT_DIR"' EXIT
 mkdir -p dist
 git archive HEAD | tar -x -C "$EXPORT_DIR"
 python3 scripts/check-privacy.py --directory "$EXPORT_DIR"
-git archive --format=zip --prefix=Attune/ -o dist/Attune-source.zip HEAD
-echo "Created dist/Attune-source.zip (no Git history)"
+git archive --format=zip --prefix=Iterune/ -o dist/Iterune-source.zip HEAD
+echo "Created dist/Iterune-source.zip (no Git history)"

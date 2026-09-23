@@ -1,6 +1,6 @@
 # GitHub Releasesへの配布
 
-配布先: https://github.com/maromocooo/Attune/releases
+配布先: https://github.com/maromocooo/Iterune/releases
 
 ソース公開と正式アプリ配布は別の判断です。正式配布前に以下の検証と署名・公証を行います。
 リポジトリの公開設定、push、タグ作成、release公開はビルドスクリプトから行いません。
@@ -15,7 +15,7 @@ STUDIO_UNIVERSAL=1 bash scripts/build-app.sh
 bash scripts/package-release.sh
 ```
 
-`dist/Attune-<version>-macOS-universal.zip` と `.sha256` を作ります。
+`dist/Iterune-<version>-macOS-universal.zip` と `.sha256` を作ります。
 開発版はad-hoc署名です。`--verify-installation` でDBやSkillを開かず、4言語の同梱を検証します。Agentは画像を使わない文字バッジで表示します。
 GitHub ActionsのCIは未登録です。現在は上記のローカル確認を使います。CIを導入する場合もlive testsは有効化しません。
 
@@ -34,8 +34,8 @@ STUDIO_UNIVERSAL=1 STUDIO_SIGN_IDENTITY='Developer ID Application: YOUR IDENTITY
 アカウント情報やパスワードをコマンド履歴・スクリプトに直書きしないでください。
 
 ```sh
-xcrun notarytool store-credentials attune-notary
-STUDIO_NOTARY_PROFILE=attune-notary bash scripts/package-release.sh
+xcrun notarytool store-credentials iterune-notary
+STUDIO_NOTARY_PROFILE=iterune-notary bash scripts/package-release.sh
 ```
 
 この場合はDeveloper ID署名を検査してから、ZIPをAppleへ送信・公証完了を待機・staple・検証し、
@@ -62,7 +62,7 @@ bash scripts/export-source.sh
 
 ソース公開とアプリ配布は別の判断です。repositoryを公開する前に、現在のmainと他のremote refs、削除済みファイルを含むGit履歴、author/committer/tagger metadata、PR・Issue・Release・Actions・添付物も確認します。最新treeの修正やnoreply設定だけでは過去の情報は消えません。公開用identityと履歴の扱いを確認し、監査の詳細はrepo外のprivate領域へ保存してください。履歴の変更や公開操作は別途承認の対象です。
 
-更新確認は手動opt-inで `maromocooo/Attune` のlatest releaseのみ照会します。PrivateまたはReleaseなしで404の場合は利用不可として案内し、別repositoryへ問い合わせ直しません。自動インストールは行いません。
+更新確認は手動opt-inで `maromocooo/Iterune` のlatest releaseのみ照会します。PrivateまたはReleaseなしで404の場合は利用不可として案内し、別repositoryへ問い合わせ直しません。自動インストールは行いません。
 
 GitHubでdraft releaseを作り、アプリZIP・SHA-256・ソースZIPを添付し、検証範囲と既知の制限を書きます。
 repositoryがPrivateの場合、Releaseを閲覧できるのはreadアクセス権を持つユーザーです。

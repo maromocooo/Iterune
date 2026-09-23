@@ -1,7 +1,7 @@
 import Foundation
 
 public enum ReleaseUpdates {
-    public static let repository = "maromocooo/Attune"
+    public static let repository = "maromocooo/Iterune"
     public static let releasesURL = URL(string: "https://github.com/" + repository + "/releases")!
     public enum Result: Equatable, Sendable {
         case current(String), available(String, URL), unavailable
@@ -10,7 +10,7 @@ public enum ReleaseUpdates {
     public static func check(currentVersion: String, transport: any TranslationHTTPTransport = TranslationURLSessionTransport()) async throws -> Result {
         var request = URLRequest(url: URL(string: "https://api.github.com/repos/" + repository + "/releases/latest")!)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.setValue("Attune", forHTTPHeaderField: "User-Agent")
+        request.setValue("Iterune", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 15
         let (data, response) = try await transport.data(for: request)
         try Task.checkCancellation()

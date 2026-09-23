@@ -11,23 +11,23 @@ if [[ "${STUDIO_UNIVERSAL:-0}" == "1" ]]; then
 fi
 swift build -c release --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"}
 BIN_DIR=$(swift build -c release --scratch-path "$BUILD_DIR" ${ARCH_ARGS[@]+"${ARCH_ARGS[@]}"} --show-bin-path)
-APP="$OUTPUT_DIR/Attune.app"
+APP="$OUTPUT_DIR/Iterune.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN_DIR/Attune" "$APP/Contents/MacOS/Attune"
+cp "$BIN_DIR/Iterune" "$APP/Contents/MacOS/Iterune"
 # SwiftPM uses different bundle layouts for native and multi-architecture builds.
 # Replace this generated bundle so an older Contents/Resources cannot shadow new catalogs.
-rm -rf "$APP/Contents/Resources/Attune_SkillStudioCore.bundle"
-cp -R "$BIN_DIR/Attune_SkillStudioCore.bundle" "$APP/Contents/Resources/"
+rm -rf "$APP/Contents/Resources/Iterune_SkillStudioCore.bundle"
+cp -R "$BIN_DIR/Iterune_SkillStudioCore.bundle" "$APP/Contents/Resources/"
 cp LICENSE "$APP/Contents/Resources/LICENSE"
 cp BRAND_ASSETS.md "$APP/Contents/Resources/BRAND_ASSETS.md"
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>CFBundleExecutable</key><string>Attune</string>
+  <key>CFBundleExecutable</key><string>Iterune</string>
   <key>CFBundleIdentifier</key><string>dev.agentskillstudio.mac</string>
-  <key>CFBundleName</key><string>Attune</string>
-  <key>CFBundleDisplayName</key><string>Attune</string>
+  <key>CFBundleName</key><string>Iterune</string>
+  <key>CFBundleDisplayName</key><string>Iterune</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>0.4.1</string>
   <key>CFBundleVersion</key><string>9</string>
@@ -43,7 +43,7 @@ PLIST
 swift scripts/make-icon.swift "$BUILD_DIR/AppIcon.iconset"
 iconutil -c icns "$BUILD_DIR/AppIcon.iconset" -o "$APP/Contents/Resources/AppIcon.icns"
 # Remove debug symbol paths from the distributable, then check before signing.
-strip -S "$APP/Contents/MacOS/Attune"
+strip -S "$APP/Contents/MacOS/Iterune"
 python3 scripts/check-privacy.py --directory "$APP"
 if [[ -n "${STUDIO_SIGN_IDENTITY:-}" ]]; then
   codesign --force --options runtime --timestamp --sign "$STUDIO_SIGN_IDENTITY" "$APP"

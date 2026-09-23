@@ -19,7 +19,7 @@ public final class StudioDatabase {
             try execute("PRAGMA journal_mode = WAL")
             try execute("PRAGMA foreign_keys = ON")
             let version = try schemaVersion()
-            guard version <= 1 else { throw StudioError.message("This library was created by a newer app. Update Attune.") }
+            guard version <= 1 else { throw StudioError.message("This library was created by a newer app. Update Iterune.") }
             try execute("CREATE TABLE IF NOT EXISTS library (id INTEGER PRIMARY KEY CHECK (id = 1), payload BLOB NOT NULL)")
             try execute("PRAGMA user_version = 1")
             lastPayload = try payload()

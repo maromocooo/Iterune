@@ -33,7 +33,7 @@ public enum Localization {
     }
     // The packaged .app uses Resources; SwiftPM uses its generated module bundle.
     private static let resourceBundle: Bundle = {
-        let name = "Attune_SkillStudioCore.bundle"
+        let name = "Iterune_SkillStudioCore.bundle"
         let locations = [Bundle.main.resourceURL, Bundle.main.executableURL?.deletingLastPathComponent()]
         for location in locations.compactMap({ $0 }) {
             if let bundle = Bundle(url: location.appendingPathComponent(name)) { return bundle }
