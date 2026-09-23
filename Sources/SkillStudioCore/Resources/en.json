@@ -396,5 +396,14 @@
   "Publish library version v{0}": "Publish library version v{0}",
   "This confirmation is fixed to the displayed version and source bytes. Changes require a new confirmation.": "This confirmation is fixed to the displayed version and source bytes. Changes require a new confirmation.",
   "Source: {0} bytes → Library: {1} bytes": "Source: {0} bytes → Library: {1} bytes",
-  "I reviewed this source-to-library diff and want to replace the source file.": "I reviewed this source-to-library diff and want to replace the source file."
+  "I reviewed this source-to-library diff and want to replace the source file.": "I reviewed this source-to-library diff and want to replace the source file.",
+  "Development requires an explicit, absolute SKILL_STUDIO_DATA_DIR. Production data was not opened. Use scripts/run-gui-smoke.sh to create an isolated run.": "Development requires an explicit, absolute SKILL_STUDIO_DATA_DIR. Production data was not opened. Use scripts/run-gui-smoke.sh to create an isolated run.",
+  "This development data directory is not safe. Choose a new private directory outside production storage. Production data was not opened.": "This development data directory is not safe. Choose a new private directory outside production storage. Production data was not opened.",
+  "Development data must start in an empty directory or an existing marked fixture directory. Existing data was not opened.": "Development data must start in an empty directory or an existing marked fixture directory. Existing data was not opened.",
+  "The isolated directory changed or contains an unsafe link. Stop and create a new isolated run.": "The isolated directory changed or contains an unsafe link. Stop and create a new isolated run.",
+  "Isolated development uses fixtures only. AI, Keychain, host history and source publishing are disabled.": "Isolated development uses fixtures only. AI, Keychain, host history and source publishing are disabled.",
+  "Development fixtures · production data is not connected": "Development fixtures · production data is not connected",
+  "Iterune — Development": "Iterune — Development",
+  "Development startup blocked": "Development startup blocked",
+  "Quit": "Quit"
 }

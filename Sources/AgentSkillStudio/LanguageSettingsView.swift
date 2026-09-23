@@ -100,6 +100,7 @@ struct LanguageSettingsView: View {
     }
     private func cancelTest() { testTask?.cancel(); testTask = nil; testing = false }
     private func diagnose() {
+        guard !store.isDevelopment else { error = RuntimeDataError.externalServicesDisabled.localizedDescription; return }
         status = nil; error = nil; diagnostics = []; testing = true
         let settings = store.connection
         testTask = Task {

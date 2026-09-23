@@ -8,6 +8,7 @@ final class SourceStateTests: XCTestCase {
     private var context: DiscoveryContext { DiscoveryContext(home: root, environment: [:], systemDirectory: root.appendingPathComponent("synthetic-etc")) }
     override func setUpWithError() throws {
         root = FileManager.default.temporaryDirectory.appendingPathComponent("SourceState-" + UUID().uuidString).resolvingSymlinksInPath()
+        _ = try prepareTestRuntime(at: root)
         try FileManager.default.createDirectory(at: source.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("A\n".utf8).write(to: source)
     }
@@ -46,8 +47,8 @@ final class SourceStateTests: XCTestCase {
         XCTAssertEqual(snapshot.runs, original.runs)
         XCTAssertEqual(snapshot.improvements, original.improvements)
         let databaseURL = root.appendingPathComponent("synthetic.sqlite")
-        do { let database = try StudioDatabase(url: databaseURL); try database.save(snapshot) }
-        let reloaded = try StudioDatabase(url: databaseURL).load()
+        do { let database = try isolatedTestDatabase(url: databaseURL); try database.save(snapshot) }
+        let reloaded = try isolatedTestDatabase(url: databaseURL).load()
         XCTAssertEqual(reloaded, snapshot)
         let request = try SourcePublisher.prepare(skillID: id, in: reloaded, context: context)
         XCTAssertEqual(request.expectedSource, "C\n"); XCTAssertEqual(request.content, "B\n")
@@ -137,7 +138,7 @@ final class SourceStateTests: XCTestCase {
             _ = sqlite3_bind_blob(statement, 1, buffer.baseAddress, Int32(buffer.count), unsafeBitCast(-1, to: sqlite3_destructor_type.self))
         }
         XCTAssertEqual(sqlite3_step(statement), SQLITE_DONE); sqlite3_finalize(statement)
-        var restored = try StudioDatabase(url: url).load()
+        var restored = try isolatedTestDatabase(url: url).load()
         XCTAssertNil(restored.skills[0].sourceProvenance); XCTAssertNil(restored.skills[0].sourceObservation)
         XCTAssertEqual(restored.runs, snapshot.runs); XCTAssertEqual(restored.improvements, snapshot.improvements)
         XCTAssertTrue(SourceStatePresentation.matchingObservedVersions(restored.skills[0], versions: restored.versions).isEmpty)

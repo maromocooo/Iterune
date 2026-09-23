@@ -157,7 +157,7 @@ struct ImproveSkillView: View {
             .onChange(of: includeRun) { _, _ in scheduleSave() }
             .onChange(of: useAI) { _, _ in if !proposed && !generating { scheduleSave() } }
             .onChange(of: store.improvementPreferences) { _, _ in if !proposed && !generating { scheduleSave() } }
-            .task { codexModels = await Task.detached(priority: .utility) { ImprovementModelCatalog.codexModels() }.value }
+            .task { guard !store.isDevelopment else { return }; codexModels = await Task.detached(priority: .utility) { ImprovementModelCatalog.codexModels() }.value }
             .onDisappear { autosave?.cancel(); proposalTask?.cancel(); if !saved { _ = persistDraft(status: generating ? "interrupted" : nil) } }
     }
     private func scheduleSave() {

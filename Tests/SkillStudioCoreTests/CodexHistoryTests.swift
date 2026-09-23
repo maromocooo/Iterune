@@ -95,7 +95,7 @@ final class CodexHistoryTests: XCTestCase {
         XCTAssertEqual(snapshot.runs[0].feedback, "Keep this."); XCTAssertEqual(snapshot.runs[0].rating, .good)
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: dir) }
-        let db = try StudioDatabase(url: dir.appendingPathComponent("fixture.sqlite"))
+        let db = try isolatedTestDatabase(url: dir.appendingPathComponent("fixture.sqlite"))
         try db.save(snapshot)
         XCTAssertEqual(try db.load(), snapshot)
     }

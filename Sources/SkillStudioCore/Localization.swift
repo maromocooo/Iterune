@@ -27,9 +27,10 @@ public enum AppLanguage: String, CaseIterable, Identifiable, Codable, Sendable {
 }
 
 public enum Localization {
+    public static var preferences = StudioPreferences(production: false)
     public static let preferenceKey = "studio.interfaceLanguage"
     public static var language: AppLanguage {
-        AppLanguage.resolve(saved: UserDefaults.standard.string(forKey: preferenceKey), preferredLanguages: Locale.preferredLanguages)
+        AppLanguage.resolve(saved: preferences.string(forKey: preferenceKey), preferredLanguages: Locale.preferredLanguages)
     }
     // The packaged .app uses Resources; SwiftPM uses its generated module bundle.
     private static let resourceBundle: Bundle = {

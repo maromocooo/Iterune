@@ -5,7 +5,7 @@ final class SkillStudioCoreTests: XCTestCase {
     private var temporary: URL!
     override func setUpWithError() throws {
         temporary = FileManager.default.temporaryDirectory.appendingPathComponent("SkillStudioTests-" + UUID().uuidString)
-        try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
+        _ = try prepareTestRuntime(at: temporary)
     }
     override func tearDownWithError() throws { try FileManager.default.removeItem(at: temporary) }
     @discardableResult private func write(_ path: String, content: String = "---\nname: example\ndescription: A sample skill\n---\n\n# Instructions\nDo the work.\n") throws -> URL {
@@ -128,8 +128,8 @@ final class SkillStudioCoreTests: XCTestCase {
         var state = LibrarySnapshot(); DemoLibrary.seed(into: &state)
         state.projectPaths = ["/a/project"]
         state.runs[0].artifacts = [Artifact(name: "日本語.md", path: "/tmp/日本語.md", mediaType: "text/markdown", byteCount: 1024)]
-        do { let database = try StudioDatabase(url: url); try database.save(state) }
-        let reopened = try StudioDatabase(url: url)
+        do { let database = try isolatedTestDatabase(url: url); try database.save(state) }
+        let reopened = try isolatedTestDatabase(url: url)
         XCTAssertEqual(try reopened.load(), state)
         state.runs[0].feedback = "Clearer, please"
         try reopened.save(state)

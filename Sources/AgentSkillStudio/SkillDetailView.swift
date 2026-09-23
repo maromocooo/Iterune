@@ -120,7 +120,8 @@ struct SkillDetailView: View {
             if store.sourceNeedsRecheck.contains(skill.sourcePath ?? "") {
                 Text(L("Source needs a fresh check.")).foregroundStyle(.orange)
             }
-            if let reason = sourceEligibility.reason { Text(reason.message).foregroundStyle(StudioTheme.muted) }
+            if store.isDevelopment { Text(RuntimeDataError.externalServicesDisabled.localizedDescription).foregroundStyle(StudioTheme.muted) }
+            else if let reason = sourceEligibility.reason { Text(reason.message).foregroundStyle(StudioTheme.muted) }
             HStack {
                 Text(L(SourceStatePresentation.differsFromObserved(skill, versions: store.library.versions)
                        ? "Library edits differ from the last observed source; they are not applied by saving."

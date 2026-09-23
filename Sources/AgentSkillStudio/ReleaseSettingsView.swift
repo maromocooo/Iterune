@@ -2,6 +2,7 @@ import SwiftUI
 import SkillStudioCore
 
 struct ReleaseSettingsView: View {
+    @EnvironmentObject var store: StudioStore
     @State private var status: String?
     @State private var update: URL?
     @State private var checking = false
@@ -28,6 +29,7 @@ struct ReleaseSettingsView: View {
             .onDisappear { task?.cancel(); checking = false }
     }
     private func check() {
+        guard !store.isDevelopment else { status = RuntimeDataError.externalServicesDisabled.localizedDescription; return }
         checking = true; status = nil; update = nil
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
         task = Task {

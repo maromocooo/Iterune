@@ -4,7 +4,7 @@ import XCTest
 final class ReleaseSafetyTests: XCTestCase {
     private func folder() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true); return url
+        _ = try prepareTestRuntime(at: url); return url
     }
     func testLibraryLeaseAndConcurrentWriterProtection() throws {
         let root = try folder(); defer { try? FileManager.default.removeItem(at: root) }
@@ -13,7 +13,7 @@ final class ReleaseSafetyTests: XCTestCase {
         lease = nil
         let replacement = try LibraryLease(directory: root); XCTAssertNotNil(replacement)
         let url = root.appendingPathComponent("test.sqlite")
-        let first = try StudioDatabase(url: url), stale = try StudioDatabase(url: url)
+        let first = try isolatedTestDatabase(url: url), stale = try isolatedTestDatabase(url: url)
         var snapshot = LibrarySnapshot(); DemoLibrary.seed(into: &snapshot)
         try first.save(snapshot)
         XCTAssertThrowsError(try stale.save(LibrarySnapshot()))
@@ -46,9 +46,9 @@ final class ReleaseSafetyTests: XCTestCase {
         let lease = try LibraryLease(directory: root); XCTAssertNotNil(lease)
         let target = root.appendingPathComponent("studio.sqlite"), corrupt = Data("synthetic broken SQLite".utf8)
         try corrupt.write(to: target)
-        XCTAssertThrowsError(try StudioDatabase(url: target))
+        XCTAssertThrowsError(try isolatedTestDatabase(url: target))
         var snapshot = LibrarySnapshot(); DemoLibrary.seed(into: &snapshot)
-        let db = try LibraryRecovery.replaceUnreadableDatabase(at: target, with: snapshot)
+        let db = try LibraryRecovery.replaceUnreadableDatabase(at: target, with: snapshot, runtime: prepareTestRuntime(at: root))
         XCTAssertEqual(try db.load(), snapshot)
         let directory = try XCTUnwrap(FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys:nil).first { $0.lastPathComponent.hasPrefix("Recovery-") })
         XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent("original.sqlite")), corrupt)
